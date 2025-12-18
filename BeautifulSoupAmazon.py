@@ -35,7 +35,7 @@ def extrair_preco_de_texto(texto):
         return None
 
 #loop e função principal
-@repeat(every(15).minutes)
+@repeat(every(9).hours)
 
 def main():
     #Pegar a lista de IDs de produtos
@@ -80,7 +80,12 @@ def main():
             print("Menor preço:", min(precos_encontrados))
             if min(precos_encontrados) <= listProduto["preco"]:
                 print("Pode comprar")
-                gm.dispararEmail(listUser[1], listUser[3], listProduto["nome"], listProduto["link"], listProduto["preco"])
+                #Validações para disparo do e-mail
+                if listProduto['EnviarAviso'] == True and listProduto['EnviarAvisoDiario'] == False:
+                    gm.dispararEmail(listUser[1], listUser[3], listProduto["nome"], listProduto["link"], listProduto["preco"])
+                    cb.avisoEnviado(id)
+                else: print(f"O preço para {listProduto["nome"]} bateu, mas as condições para soltar o e-mail não foram cumpridas")
+
             else: print("O Preço encontrado está acima do desejado")
         else:
             #Caso não tenha sido encontrado nenhum preço
@@ -89,6 +94,12 @@ def main():
         #Validação do loop de tempo, informando a hora da execução dessa linha (comentar quando não for mais util)
         data_hora = datetime.datetime.now()
         print("Hora da operação: ", data_hora )
+
+#loop para o reset no banco
+@repeat(every(12).hours)
+
+def reset():
+    cb.ResetAviso()
 
 #Roda o loop infinitamente
 while True:

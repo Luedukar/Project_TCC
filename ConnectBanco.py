@@ -31,8 +31,8 @@ try:
                     "nome": row[2],
                     "preco": float(row[3]) if isinstance(row[3], Decimal) else row[3],
                     "link": row[4],
-                    "ativo": row[5],
-                    "expirado": row[6],
+                    "EnviarAviso": row[5],
+                    "EnviarAvisoDiario": row[6],
                     "data": row[7]
                 }
             
@@ -52,7 +52,18 @@ try:
                 row = cur.fetchone()
                 resultado = list(row) if row else []
                 return resultado
-    
+            
+    def avisoEnviado(id):
+        with get_connection() as con:
+            with con.cursor() as cur:
+                cur.execute(f"UPDATE produtos SET AvisoDiario = TRUE, atualizado = NOW() WHERE productid = {id}")
+                print(f"horario alterado para id: {id}")
+
+    def ResetAviso():
+        with get_connection() as con:
+            with con.cursor() as cur:
+                cur.execute("UPDATE produtos SET AvisoDiario = FALSE, atualizado = NOW() WHERE AvisoDiario = TRUE AND atualizado < NOW() - INTERVAL '24 hours';")
+                print("Executado")
       
 except Exception as e:
     print("Deu ruin: ", e)
