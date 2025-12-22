@@ -44,26 +44,28 @@ def main():
     for id in idsProduto:
         print(id)
         listProduto = cb.navegarbanco(id)
-        listUser = cb.navegarbancoUsers(listProduto["userID"])
-        link = listProduto["link"]
-        # Abre o navegador (Chrome)
+        listUser = cb.navegarbancoUsers(listProduto[1])
+        link = listProduto[4]
+        #Abre o navegador (Chrome)
         driver = webdriver.Chrome()
         driver.get(link)
 
-        # Espera o site carregar (ajuste o tempo conforme necessário)
+        #Espera o site carregar (ajustar o tempo conforme necessário)
         tm.sleep(5)
 
-        # Ler o HTML e extrair o que for preciso direto da pag web com o BeautifulSoup
+        #Ler o HTML e extrair o que for preciso direto da pag web com o BeautifulSoup
         site = bf(driver.page_source, "html.parser")
         preco= []
         valores1 = site.find('span', class_='aok-offscreen')
         valores2 = site.find_all('span', class_="olpWrapper a-size-small")
         preco.append(valores1)
-        preco.append(valores2)
+        #Incluir todos os preços obtidos por valor 2
+        for i in valores2:
+            preco.append(i)
 
         driver.quit()
 
-    #Pega todos os preços encontrados (texto todo poluido) passa 1 por 1 dos itens fazendo as devidas conversões
+    #Obtem todos os preços encontrados (texto poluido) passa 1 a 1 dos itens fazendo as devidas conversões
         precos_encontrados = []
         for tag in preco:
             texto = tag.get_text() if hasattr(tag, 'get_text') else str(tag)
@@ -71,32 +73,31 @@ def main():
             if valor is not None:
                 precos_encontrados.append(valor)
 
-        #Imprimi todos os preços encontrados 9comente caso não seja necessario)
+        #Imprimi todos os preços encontrados (usado para validação, comente caso não seja necessario)
         print(precos_encontrados)
         
-        #enviar Email fica desativado quando usado no PC da firma pois não funciona, no PC de casa é só descomentar
-        #Encontra o menor preço na lista (esse que interresa), se for dentro do preço desejado, envia o email
+        #Encontra o menor preço na lista (alvo), se for igual ou inferior ao preço desejado, envia o email
         if precos_encontrados:
             print("Menor preço:", min(precos_encontrados))
-            if min(precos_encontrados) <= listProduto["preco"]:
+            if min(precos_encontrados) <= listProduto[3]:
                 print("Pode comprar")
                 #Validações para disparo do e-mail
-                if listProduto['EnviarAviso'] == True and listProduto['EnviarAvisoDiario'] == False:
-                    gm.dispararEmail(listUser[1], listUser[3], listProduto["nome"], listProduto["link"], listProduto["preco"])
+                if listProduto[5] == True and listProduto[6] == False:
+                    gm.dispararEmail(listUser[1], listUser[3], listProduto[2], listProduto[4], listProduto[3])
                     cb.avisoEnviado(id)
-                else: print(f"O preço para {listProduto["nome"]} bateu, mas as condições para soltar o e-mail não foram cumpridas")
+                else: print(f"O preço para {listProduto[2]} bateu, mas as condições para soltar o e-mail não foram cumpridas")
 
             else: print("O Preço encontrado está acima do desejado")
         else:
             #Caso não tenha sido encontrado nenhum preço
             print("Preço não encontrado")
         
-        #Validação do loop de tempo, informando a hora da execução dessa linha (comentar quando não for mais util)
+        #Validação do loop de tempo, informando a hora da execução dessa linha (utilizado para validação, comentar quando não for mais util)
         data_hora = datetime.datetime.now()
         print("Hora da operação: ", data_hora )
 
 #loop para o reset no banco
-@repeat(every(12).hours)
+@repeat(every(8).hours)
 
 def reset():
     cb.ResetAviso()

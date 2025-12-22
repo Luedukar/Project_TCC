@@ -7,18 +7,24 @@ from dotenv import load_dotenv
 #ler e priorizar o .env com dados sensiveis
 load_dotenv(override=True)
 
-#variaveis não sensiveis e padrões
+#variaveis não sensiveis
 assunto = "Monitoramento de preço"
 
-#função que monta e dispara o e-mail
+#função que constroi e dispara o e-mail
 def dispararEmail(nome, destinatario, nome_produto, link, preco_desejado):
 
     #Mensagem padrão de envio, precisa estar aqui para receber as devidas variaveis
-    mensagem_html = f""" 
-    <p> Olá {nome}, aqui é o aplicativo vilão passando para avisar</p>
-    <p> O produto {nome_produto} atingiu um valor igual ou inferior ao desejado (R$ {preco_desejado}) </p>
-    <p> Confera lá, vou deixar o link aqui novamente: {link} <p>
-    """
+    mensagem_html = f"""
+    <p>Prezado(a) {nome},</p>
+
+    <p>Este é um aviso automático de monitormento de preços para informá-lo(a) de que o produto 
+    <strong>{nome_produto}</strong> atingiu um valor igual ou inferior ao preço desejado 
+    (R$ {preco_desejado}).</p>
+
+    <p>Caso tenha interesse, consulte o produto através do link abaixo:</p>
+
+    <p><a href="{link}">{link}</a></p>
+"""
     
     #montar email
     msg = EmailMessage()

@@ -7,6 +7,7 @@ from decimal import Decimal
 load_dotenv(override=True)
 
 try:
+    #Conexão com o banco
     def get_connection():
         return psycopg2.connect(
             host=os.getenv("host"),
@@ -15,7 +16,8 @@ try:
             password=os.getenv("password"),
             port=os.getenv("port"),
         )
-
+    
+    #Encontrar dados do produto com base em seu ID
     def navegarbanco(product_id):
         with get_connection() as con:
             with con.cursor() as cur:
@@ -25,23 +27,16 @@ try:
                 if not row:
                     return None
 
-                return {
-                    "productID": row[0],
-                    "userID": row[1],
-                    "nome": row[2],
-                    "preco": float(row[3]) if isinstance(row[3], Decimal) else row[3],
-                    "link": row[4],
-                    "EnviarAviso": row[5],
-                    "EnviarAvisoDiario": row[6],
-                    "data": row[7]
-                }
+                return row
             
+    #Encontrar todos os IDs de produtos
     def extrairID():
         with get_connection() as con:
             with con.cursor() as cur:
                 cur.execute("SELECT productID FROM produtos")
                 return [row[0] for row in cur.fetchall()]
             
+    #Encontrar informações do usuario com base em um ID de usuario
     def navegarbancoUsers(id):
         with get_connection() as con:
             with con.cursor() as cur:
@@ -53,12 +48,14 @@ try:
                 resultado = list(row) if row else []
                 return resultado
             
+    #Caso o e-mail seja enviado, alterar no banco para evitar multiplos envios diarios do mesmo item
     def avisoEnviado(id):
         with get_connection() as con:
             with con.cursor() as cur:
                 cur.execute(f"UPDATE produtos SET AvisoDiario = TRUE, atualizado = NOW() WHERE productid = {id}")
                 print(f"horario alterado para id: {id}")
 
+    #Caso o tempo desde o ultimo aviso seja maior que 24 horas, o item volta a estar apto para enviar um novo aviso
     def ResetAviso():
         with get_connection() as con:
             with con.cursor() as cur:
@@ -66,4 +63,4 @@ try:
                 print("Executado")
       
 except Exception as e:
-    print("Deu ruin: ", e)
+    print("Erro: ", e)
